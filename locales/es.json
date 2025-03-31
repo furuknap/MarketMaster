@@ -64,5 +64,6 @@
   "saleCompleteTotalLabel": "Total:",
   "saleCompletePaidWithLabel": "Pagado con:",
   "doneButton": "Hecho",
+  "saleCompleteProfitLabel": "Ganancia:",
   "selectProductPlaceholder": "Selecciona un producto..."
 }

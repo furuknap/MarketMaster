@@ -412,12 +412,14 @@ function handleEventSubmit(e) {
     const name = document.getElementById('eventName').value;
     const date = document.getElementById('eventDate').value;
     const location = document.getElementById('eventLocation').value;
+ const cost = parseFloat(document.getElementById('eventCost').value);
     
     state.currentEvent = {
         id: Date.now(),
         name,
         date,
         location,
+  cost,
         startTime: new Date().toISOString()
     };
     
@@ -944,10 +946,30 @@ function completeSale() {
     // Show confirmation modal
     elements.modalTotal.textContent = `$${state.currentSale.total.toFixed(2)}`;
     elements.modalPaymentMethod.textContent = state.currentSale.paymentMethod;
+ 
+ // Calculate and display event profit
+    const profit = calculateEventProfit(state.currentSale, state.currentEvent);
     elements.saleCompleteModal.classList.remove('hidden');
+    
+ // Display profit in modal
+    const profitElement = document.createElement('p');
+    profitElement.classList.add('text-gray-600');
+    profitElement.innerHTML = `<span data-translate="saleCompleteProfitLabel">Profit:</span> <span class="font-bold">$${profit.toFixed(2)}</span>`;
+    elements.saleCompleteModal.querySelector('.text-center').appendChild(profitElement);
     
     // Update sales total display
     updateSalesTotal();
+// Calculate event profit
+function calculateEventProfit(sale, event) {
+  let totalRevenue = sale.total;
+  let totalCostOfGoods = 0;
+  sale.items.forEach(item => {
+    totalCostOfGoods += item.product.cost * item.quantity;
+  });
+  let eventCost = event ? event.cost : 0;
+  let totalProfit = totalRevenue - totalCostOfGoods - eventCost;
+  return totalProfit;
+}
     
     // Render sales history
     renderSalesHistory();
