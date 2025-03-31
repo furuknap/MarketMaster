@@ -10,7 +10,9 @@ const state = {
         total: 0
     },
     salesHistory: [],
-    currentEvent: null
+    currentEvent: null,
+    eventStartDate: null,
+    eventEndDate: null
 };
 
 // --- Translation State ---
@@ -239,7 +241,8 @@ async function init() {
     // Display event name and date
     if (state.currentEvent) {
         document.getElementById('eventName').textContent = state.currentEvent.name;
-        document.getElementById('eventDate').textContent = new Date(state.currentEvent.date).toLocaleDateString();
+        document.getElementById('eventStartDate').textContent = new Date(state.currentEvent.startDate).toLocaleDateString();
+  document.getElementById('eventEndDate').textContent = new Date(state.currentEvent.endDate).toLocaleDateString();
     }
 
     updateSalesTotal();
@@ -281,7 +284,9 @@ function saveToLocalStorage() {
         products: state.products,
         discounts: state.discounts,
         salesHistory: state.salesHistory,
-        currentEvent: state.currentEvent
+        currentEvent: state.currentEvent,
+        eventStartDate: state.eventStartDate,
+        eventEndDate: state.eventEndDate
     }));
 }
 
@@ -293,6 +298,8 @@ function loadFromLocalStorage() {
         state.discounts = data.discounts || [];
         state.salesHistory = data.salesHistory || [];
         state.currentEvent = data.currentEvent || null;
+        state.eventStartDate = data.eventStartDate || null;
+        state.eventEndDate = data.eventEndDate || null;
     }
 }
 
@@ -433,14 +440,16 @@ function handleEventSubmit(e) {
     e.preventDefault();
     
     const name = document.getElementById('eventName').value;
-    const date = document.getElementById('eventDate').value;
+    const startDate = document.getElementById('eventStartDate').value;
+    const endDate = document.getElementById('eventEndDate').value;
     const location = document.getElementById('eventLocation').value;
  const cost = parseFloat(document.getElementById('eventCost').value);
     
     state.currentEvent = {
         id: Date.now(),
         name,
-        date,
+        startDate,
+        endDate,
         location,
   cost,
         startTime: new Date().toISOString()
