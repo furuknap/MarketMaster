@@ -13,6 +13,10 @@ const state = {
     currentEvent: null
 };
 
+// --- Translation State ---
+let currentLanguage = localStorage.getItem('marketMasterLanguage') || 'en'; // Load saved language or default to 'en'
+let translations = {};
+
 // DOM Elements
 const elements = {
     productList: document.getElementById('productList'),
@@ -60,19 +64,175 @@ const elements = {
     modalTotal: document.getElementById('modalTotal'),
     modalPaymentMethod: document.getElementById('modalPaymentMethod')
 };
+// --- Translation Functions ---
+async function loadTranslations(lang) {
+    try {
+        const response = await fetch(`locales/${lang}.json`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        translations = await response.json();
+        currentLanguage = lang;
+        localStorage.setItem('marketMasterLanguage', lang);
+        document.documentElement.lang = lang; // Update html lang attribute
+        applyTranslations();
+        // Re-render dynamic elements that depend on translations
+        renderProducts();
+        renderDiscounts();
+        renderReceipt();
+        renderSalesHistory();
+        renderQuickAddButtons(); // If quick add buttons have translatable text
+        updateSalesTotal(); // Update label
+        // Update modal titles and labels if they are open or need dynamic updates
+        updateDynamicModalText();
+    } catch (error) {
+        console.error("Could not load translations:", error);
+        // Fallback or error handling
+    }
+}
+
+function t(key) {
+    return translations[key] || key; // Return key if translation not found
+}
+
+function applyTranslations() {
+    document.querySelectorAll('[data-translate]').forEach(element => {
+        const key = element.getAttribute('data-translate');
+        const targetAttribute = element.getAttribute('data-translate-attribute');
+
+        if (targetAttribute) {
+            // Translate a specific attribute (e.g., placeholder, title)
+            element.setAttribute(targetAttribute, t(key));
+        } else if (element.tagName === 'TITLE') {
+            element.textContent = t(key);
+        } else if (element.tagName === 'INPUT' && element.type === 'submit') {
+             element.value = t(key); // For submit button value
+        } else if (element.tagName === 'OPTION') {
+             // Only translate static options, dynamic ones handled by render functions
+             if (!element.closest('select[dynamic-options]')) { 
+                element.textContent = t(key);
+             }
+        } else {
+            // Use innerHTML for elements that might contain icons (like buttons)
+            // Preserve existing non-text nodes (like <i> icons)
+            const childNodes = Array.from(element.childNodes);
+            element.innerHTML = ''; // Clear existing content
+            childNodes.forEach(node => {
+                if (node.nodeType !== Node.TEXT_NODE) {
+                    element.appendChild(node.cloneNode(true)); // Re-append non-text nodes (like <i>)
+                }
+            });
+            // Append the translated text node (add space for buttons etc)
+            const textNode = document.createTextNode((element.tagName === 'BUTTON' || element.querySelector('i')) ? (' ' + t(key)) : t(key)); 
+            element.appendChild(textNode);
+        }
+    });
+     // Update specific elements not easily captured by data-translate
+    const totalSalesLabel = elements.totalSales.previousElementSibling;
+    if (totalSalesLabel) totalSalesLabel.textContent = t('todaysSalesLabel');
+
+    // Update dynamic text placeholders if necessary (initial state messages)
+    if (state.products.length === 0 && elements.productList) {
+        elements.productList.innerHTML = `<div class="text-gray-500 italic">${t('noProducts')}</div>`;
+    }
+     if (state.discounts.length === 0 && elements.discountList) {
+        elements.discountList.innerHTML = `<div class="text-gray-500 italic">${t('noDiscounts')}</div>`;
+    }
+    if (state.currentSale.items.length === 0 && elements.emptyReceiptMessage) {
+        elements.emptyReceiptMessage.textContent = t('emptyReceiptMessage');
+        elements.emptyReceiptMessage.classList.remove('hidden');
+        elements.receiptItems.classList.add('hidden');
+        elements.receiptTotals.classList.add('hidden');
+    } else if (elements.emptyReceiptMessage) {
+         elements.emptyReceiptMessage.classList.add('hidden');
+         elements.receiptItems.classList.remove('hidden');
+         elements.receiptTotals.classList.remove('hidden');
+    }
+    if (state.salesHistory.length === 0 && elements.salesHistory) {
+        const historyTableBody = elements.salesHistory;
+        // Check if the placeholder row exists or needs to be created
+        if (historyTableBody.rows.length === 0 || (historyTableBody.rows.length === 1 && historyTableBody.rows[0].cells.length > 1)) {
+             historyTableBody.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-center text-gray-500 italic">${t('noSales')}</td></tr>`;
+        } else if (historyTableBody.rows.length === 1 && historyTableBody.rows[0].cells.length === 1) {
+             historyTableBody.rows[0].cells[0].textContent = t('noSales');
+        }
+    }
+    // Update modal select placeholders dynamically
+    updateDynamicModalText();
+
+}
+
+// Helper to update text in modals that might be generated dynamically
+function updateDynamicModalText() {
+    // Product Modal Categories (static options handled by applyTranslations)
+
+    // Discount Modal - Product Select (populated dynamically)
+    const discountProductSelect = document.getElementById('discountProduct');
+    if (discountProductSelect) {
+        // If it's populated dynamically, ensure placeholder is handled correctly
+        // The populateProductDropdown function should handle adding options
+        // We might need to add a placeholder option there if desired
+        if (discountProductSelect.options.length === 0 && state.products.length === 0) {
+             discountProductSelect.innerHTML = `<option value="" disabled selected>${t('noProducts')}</option>`;
+        } else if (discountProductSelect.options.length > 0 && discountProductSelect.selectedIndex === -1) {
+             // If no option is selected, maybe add/select a placeholder
+             // This depends on how populateProductDropdown is implemented
+        }
+    }
+
+     // Discount Modal - "With Product" Select (populated dynamically)
+    const withProductSelect = document.getElementById('withProductSelect');
+     if (withProductSelect) {
+        if (withProductSelect.options.length === 0 && state.products.length === 0) {
+            withProductSelect.innerHTML = `<option value="" disabled selected>${t('noProducts')}</option>`;
+        }
+    }
+
+    // Update labels within dynamically generated discount fields
+    // These labels should ideally have data-translate attributes added when generated
+    document.querySelectorAll('#discountFields label[data-translate-dynamic]').forEach(label => {
+        const key = label.getAttribute('data-translate-dynamic');
+        label.textContent = t(key);
+    });
+
+    // Update Sale Complete Modal dynamic text
+    const modalPaymentMethodSpan = elements.modalPaymentMethod;
+    if (modalPaymentMethodSpan && state.currentSale.paymentMethod) { // Check if payment method exists
+        const paymentMethodKey = 'payment' + state.currentSale.paymentMethod.charAt(0).toUpperCase() + state.currentSale.paymentMethod.slice(1);
+        modalPaymentMethodSpan.textContent = t(paymentMethodKey);
+    }
+}
+
+
+// --- Language Switcher ---
+function setupLanguageSwitcher() {
+    const switcher = document.getElementById('languageSwitcher'); // Assuming an element with this ID exists
+    if (switcher) {
+        switcher.addEventListener('change', (event) => {
+            loadTranslations(event.target.value);
+        });
+        // Set initial value from state
+        switcher.value = currentLanguage;
+    }
+}
+
 
 // Initialize the app
-function init() {
+async function init() {
     // Load sample data if no data in localStorage
     if (!localStorage.getItem('marketMasterData')) {
         loadSampleData();
     } else {
         loadFromLocalStorage();
     }
+    await loadTranslations(currentLanguage); // Load initial translations
+
     
     // Set up event listeners
     setupEventListeners();
     
+    setupLanguageSwitcher(); // Setup listener for language changes
+
     // Render initial UI
     renderProducts();
     renderDiscounts();
@@ -276,18 +436,18 @@ function updateDiscountFields() {
     if (type === 'bundle') {
         html = `
             <div>
-                <label class="block text-gray-700 mb-2" for="bundleQuantity">Quantity</label>
+                <label class="block text-gray-700 mb-2" for="bundleQuantity" data-translate-dynamic="bundleQuantityLabel">Quantity</label>
                 <input type="number" id="bundleQuantity" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="2" min="2">
             </div>
             <div>
-                <label class="block text-gray-700 mb-2" for="bundlePrice">Total Price ($)</label>
+                <label class="block text-gray-700 mb-2" for="bundlePrice" data-translate-dynamic="bundlePriceLabel">Total Price ($)</label>
                 <input type="number" step="0.01" id="bundlePrice" class="w-full px-3 py-2 border border-gray-300 rounded-md">
             </div>
         `;
     } else if (type === 'percentage') {
         html = `
             <div class="col-span-2">
-                <label class="block text-gray-700 mb-2" for="percentageValue">Percentage Off</label>
+                <label class="block text-gray-700 mb-2" for="percentageValue" data-translate-dynamic="percentageValueLabel">Percentage Off</label>
                 <div class="flex items-center">
                     <input type="number" id="percentageValue" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="10" min="1" max="100">
                     <span class="ml-2">%</span>
@@ -297,7 +457,7 @@ function updateDiscountFields() {
     } else if (type === 'fixed') {
         html = `
             <div class="col-span-2">
-                <label class="block text-gray-700 mb-2" for="fixedAmount">Amount Off ($)</label>
+                <label class="block text-gray-700 mb-2" for="fixedAmount" data-translate-dynamic="fixedAmountLabel">Amount Off ($)</label>
                 <input type="number" step="0.01" id="fixedAmount" class="w-full px-3 py-2 border border-gray-300 rounded-md">
             </div>
         `;
@@ -310,7 +470,7 @@ function updateDiscountFields() {
                     <div class="col-span-2 mt-2">
                         <label class="inline-flex items-center">
                             <input type="checkbox" id="withProductCheckbox" class="form-checkbox">
-                            <span class="ml-2">When purchased with another product</span>
+                            <span class="ml-2" data-translate-dynamic="withProductLabel">When purchased with another product</span>
                         </label>
                         <select id="withProductSelect" class="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md hidden">
                             <!-- Products will be populated here -->
@@ -365,8 +525,9 @@ function populateWithProductDropdown() {
 
 // Render products list
 function renderProducts() {
+    if (!elements.productList) return; // Guard clause
     if (state.products.length === 0) {
-        elements.productList.innerHTML = '<div class="text-gray-500 italic">No products added yet</div>';
+        elements.productList.innerHTML = `<div class="text-gray-500 italic">${t('noProducts')}</div>`;
         return;
     }
     
@@ -423,8 +584,9 @@ function renderProducts() {
 
 // Render discounts list
 function renderDiscounts() {
+    if (!elements.discountList) return; // Guard clause
     if (state.discounts.length === 0) {
-        elements.discountList.innerHTML = '<div class="text-gray-500 italic">No discount packs created yet</div>';
+        elements.discountList.innerHTML = `<div class="text-gray-500 italic">${t('noDiscounts')}</div>`;
         return;
     }
     
@@ -552,7 +714,7 @@ function editProduct(productId) {
 
 // Delete product
 function deleteProduct(productId) {
-    if (confirm('Are you sure you want to delete this product?')) {
+    if (confirm(t('confirmDeleteProduct'))) {
         state.products = state.products.filter(p => p.id !== productId);
         saveToLocalStorage();
         renderProducts();
@@ -601,7 +763,7 @@ function editDiscount(discountId) {
 
 // Delete discount
 function deleteDiscount(discountId) {
-    if (confirm('Are you sure you want to delete this discount?')) {
+    if (confirm(t('confirmDeleteDiscount'))) {
         state.discounts = state.discounts.filter(d => d.id !== discountId);
         saveToLocalStorage();
         renderDiscounts();
@@ -793,10 +955,11 @@ function completeSale() {
 
 // Render sales history
 function renderSalesHistory() {
+    if (!elements.salesHistory) return; // Guard clause
     if (state.salesHistory.length === 0) {
         elements.salesHistory.innerHTML = `
             <tr>
-                <td colspan="4" class="px-4 py-4 text-center text-gray-500 italic">No sales recorded yet</td>
+                <td colspan="4" class="px-4 py-4 text-center text-gray-500 italic">${t('noSales')}</td>
             </tr>
         `;
         return;
