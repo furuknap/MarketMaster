@@ -7,6 +7,7 @@
     <title data-translate="appTitle">MarketMaster - Farmer's Market Sales Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -41,6 +42,17 @@
             <a href="#" id="newEventBtn" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 hover:text-green-600" role="menuitem" tabindex="-1" data-translate="newEventButton">
                 <i class="fas fa-plus mr-2"></i> New Event
             </a>
+            <div class="border-t border-gray-200 my-1"></div>
+            <div class="relative group">
+                <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 hover:text-green-600" role="menuitem" tabindex="-1" data-translate="reportsMenu">
+                    <i class="fas fa-chart-bar mr-2"></i> Reports
+                </a>
+                <div class="ml-4 hidden group-hover:block">
+                    <a href="#" id="todaysSaleReportBtn" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 hover:text-green-600" role="menuitem" tabindex="-1" data-translate="todaysSaleReport">
+                        <i class="fas fa-calendar-day mr-2"></i> Today's Sale
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -317,6 +329,48 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Today's Sale Report Modal -->
+    <div id="todaysSaleReportModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-2xl slide-in">
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold mb-2">Sales Report: <span id="reportEventName"></span></h3>
+                <p class="text-gray-600">Location: <span id="reportEventLocation" class="font-medium"></span></p>
+                <p class="text-gray-600">Date: <span id="reportEventDate" class="font-medium"></span></p>
+                
+                <div class="mt-4 flex justify-between">
+                    <div class="bg-gray-50 p-4 rounded-lg w-1/4">
+                        <p class="text-sm text-gray-500">Total Sales</p>
+                        <p class="text-2xl font-bold" id="reportTotalSales">$0.00</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg w-1/4">
+                        <p class="text-sm text-gray-500">Total Profit</p>
+                        <p class="text-2xl font-bold" id="reportTotalProfit">$0.00</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg w-1/4">
+                        <p class="text-sm text-gray-500">Transactions</p>
+                        <p class="text-2xl font-bold" id="reportTransactionCount">0</p>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Date</label>
+                    <select id="reportDateSelect" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="today">Today</option>
+                    </select>
+                </div>
+
+                <div class="mt-4 bg-gray-50 p-4 rounded-lg">
+                    <canvas id="salesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            <div class="flex justify-center">
+                <button id="closeReportModal" class="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                    Close
+                </button>
+            </div>
         </div>
     </div>
 

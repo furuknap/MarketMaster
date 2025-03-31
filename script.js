@@ -50,6 +50,16 @@ const elements = {
     addDiscountBtn: document.getElementById('addDiscountBtn'),
     newEventBtn: document.getElementById('newEventBtn'),
     clearSaleBtn: document.getElementById('clearSaleBtn'),
+    todaysSaleReportModal: document.getElementById('todaysSaleReportModal'),
+    reportEventName: document.getElementById('reportEventName'),
+    reportEventLocation: document.getElementById('reportEventLocation'),
+    reportEventDate: document.getElementById('reportEventDate'),
+    reportTotalSales: document.getElementById('reportTotalSales'),
+    reportTotalProfit: document.getElementById('reportTotalProfit'),
+    reportTransactionCount: document.getElementById('reportTransactionCount'),
+    reportDateSelect: document.getElementById('reportDateSelect'),
+    salesChart: document.getElementById('salesChart'),
+    closeReportModal: document.getElementById('closeReportModal'),
     completeSaleBtn: document.getElementById('completeSaleBtn'),
     paymentMethodBtns: document.querySelectorAll('.payment-method-btn'),
     
@@ -314,6 +324,10 @@ function setupEventListeners() {
         elements.discountModal.classList.remove('hidden');
     });
     elements.newEventBtn.addEventListener('click', () => elements.eventModal.classList.remove('hidden'));
+    document.getElementById('todaysSaleReportBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        showTodaysSaleReport();
+    });
     
     // Modal closes
     elements.closeProductModal.addEventListener('click', () => elements.productModal.classList.add('hidden'));
@@ -365,6 +379,11 @@ function setupEventListeners() {
     if (menuButton && menuDropdown) {
         menuButton.addEventListener('click', () => {
             menuDropdown.classList.toggle('hidden');
+        });
+
+        todaysSaleReportBtn.addEventListener('click', () => {
+            showTodaysSaleReport();
+            menuDropdown.classList.add('hidden');
         });
 
         // Close the dropdown when clicking outside
@@ -1056,6 +1075,95 @@ function renderSalesHistory() {
     });
     
     elements.salesHistory.innerHTML = html;
+}
+
+// Show Today's Sale Report
+function showTodaysSaleReport() {
+    // Show modal
+    elements.todaysSaleReportModal.classList.remove('hidden');
+    
+    // Populate event details
+    if (state.currentEvent) {
+        elements.reportEventName.textContent = state.currentEvent.name;
+        elements.reportEventLocation.textContent = state.currentEvent.location;
+        elements.reportEventDate.textContent = new Date(state.currentEvent.startDate).toLocaleDateString();
+    }
+    
+    // Calculate and display stats
+    const todaySales = state.salesHistory.filter(sale => {
+        const saleDate = new Date(sale.timestamp).toDateString();
+        return saleDate === new Date().toDateString();
+    });
+    
+    const totalSales = todaySales.reduce((sum, sale) => sum + sale.total, 0);
+    const totalProfit = todaySales.reduce((sum, sale) => sum + calculateSaleProfit(sale), 0);
+    
+    elements.reportTotalSales.textContent = `$${totalSales.toFixed(2)}`;
+    elements.reportTotalProfit.textContent = `$${totalProfit.toFixed(2)}`;
+    elements.reportTransactionCount.textContent = todaySales.length;
+    
+    // Initialize chart with hourly sales data
+    const hourlySales = {};
+    const hourlyProfit = {};
+    
+    // Initialize hours with 0 values
+    for (let i = 0; i < 24; i++) {
+        hourlySales[i] = 0;
+        hourlyProfit[i] = 0;
+    }
+    
+    // Aggregate sales by hour
+    todaySales.forEach(sale => {
+        const hour = new Date(sale.timestamp).getHours();
+        hourlySales[hour] += sale.total;
+        hourlyProfit[hour] += calculateSaleProfit(sale);
+    });
+    
+    // Convert to arrays for chart
+    const hours = Array.from({length: 24}, (_, i) => i);
+    const salesData = hours.map(h => hourlySales[h]);
+    const profitData = hours.map(h => hourlyProfit[h]);
+    
+    // Create chart
+    new Chart(elements.salesChart, {
+        type: 'line',
+        data: {
+            labels: hours.map(h => `${h}:00`),
+            datasets: [
+                {
+                    label: 'Sales ($)',
+                    data: salesData,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Profit ($)',
+                    data: profitData,
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Hourly Sales Performance'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Close modal handler
+    elements.closeReportModal.addEventListener('click', () => {
+        elements.todaysSaleReportModal.classList.add('hidden');
+    });
 }
 
 // Update sales total

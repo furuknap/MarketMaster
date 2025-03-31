@@ -71,5 +71,7 @@
   "saleCompletePaidWithLabel": "Paid with:",
   "doneButton": "Done",
   "saleCompleteProfitLabel": "Profit:",
-  "selectProductPlaceholder": "Select a product..."
+  "selectProductPlaceholder": "Select a product...",
+  "reportsMenu": "Reports",
+  "todaysSaleReport": "Today's Sale"
 }
