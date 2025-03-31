@@ -16,3 +16,29 @@
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
 }
+
+/* Basic styling for the hamburger menu */
+#menuButton {
+    
+}
+
+#menuDropdown {
+    z-index: 10; /* Ensure it's above other elements */
+}
+
+#menuDropdown a {
+    display: block;
+    padding: 0.5rem 1rem;
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-align: inherit;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+}
+
+#menuDropdown a:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+}

@@ -342,6 +342,23 @@ function setupEventListeners() {
     
     // Discount type change
     document.getElementById('discountType').addEventListener('change', updateDiscountFields);
+
+    // Hamburger menu toggle
+    const menuButton = document.getElementById('menuButton');
+    const menuDropdown = document.getElementById('menuDropdown');
+
+    if (menuButton && menuDropdown) {
+        menuButton.addEventListener('click', () => {
+            menuDropdown.classList.toggle('hidden');
+        });
+
+        // Close the dropdown when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!menuButton.contains(event.target) && !menuDropdown.contains(event.target)) {
+                menuDropdown.classList.add('hidden');
+            }
+        });
+    }
 }
 
 // Handle product form submission
