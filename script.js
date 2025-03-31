@@ -236,6 +236,12 @@ async function init() {
     // Render initial UI
     renderProducts();
     renderDiscounts();
+    // Display event name and date
+    if (state.currentEvent) {
+        document.getElementById('eventName').textContent = state.currentEvent.name;
+        document.getElementById('eventDate').textContent = new Date(state.currentEvent.date).toLocaleDateString();
+    }
+
     updateSalesTotal();
 }
 
