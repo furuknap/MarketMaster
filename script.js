@@ -959,6 +959,9 @@ function completeSale() {
     
     state.salesHistory.unshift(saleRecord);
     saveToLocalStorage();
+
+    // Clear current sale
+    clearCurrentSale();
     
     // Show confirmation modal
     elements.modalTotal.textContent = `$${state.currentSale.total.toFixed(2)}`;
