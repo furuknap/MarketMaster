@@ -239,14 +239,11 @@ async function init() {
     renderProducts();
     renderDiscounts();
     // Display event name and date
- if (state.currentEvent) {
+    if (state.currentEvent) {
         document.getElementById('eventName').textContent = state.currentEvent.name;
         const startDate = state.currentEvent.startDate ? new Date(state.currentEvent.startDate).toLocaleDateString() : 'Invalid Date';
         const endDate = state.currentEvent.endDate ? new Date(state.currentEvent.endDate).toLocaleDateString() : 'Invalid Date';
         document.getElementById('eventDate').textContent = `${startDate} - ${endDate}`;
-    } else {
-        document.getElementById('eventName').textContent = "";
-        document.getElementById('eventDate').textContent = "";
     }
 
     updateSalesTotal();
