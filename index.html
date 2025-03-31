@@ -31,9 +31,19 @@
                             <option value="es">Español</option>
                         </select>
                     </div>
-
-                    <button id="newEventBtn" data-translate="newEventButton" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
-                        <i class="fas fa-plus mr-2"></i> New Event
+<div class="relative inline-block text-left mr-4">
+    <button id="menuButton" type="button" class="inline-flex justify-center items-center w-full rounded-md bg-green-600 hover:bg-green-700 text-white px-4 py-2 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" aria-expanded="false" aria-haspopup="true">
+        <i class="fas fa-bars mr-2"></i> Menu
+    </button>
+    
+    <div id="menuDropdown" class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden" role="menu" aria-orientation="vertical" aria-labelledby="menuButton" tabindex="-1">
+        <div class="py-1" role="none">
+            <a href="#" id="newEventBtn" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 hover:text-green-600" role="menuitem" tabindex="-1" data-translate="newEventButton">
+                <i class="fas fa-plus mr-2"></i> New Event
+            </a>
+        </div>
+    </div>
+</div>
                     </button>
                 </div>
             </div>
