@@ -993,7 +993,7 @@ function completeSale() {
     // Add to sales history
     const saleRecord = {
         id: Date.now(),
-        timestamp: new Date().toLocaleTimeString(),
+        timestamp: new Date().toISOString(),
         items: [...state.currentSale.items],
         paymentMethod: state.currentSale.paymentMethod,
         total: state.currentSale.total,
@@ -1090,10 +1090,27 @@ function showTodaysSaleReport() {
     }
     
     // Calculate and display stats
+    console.log('All sales:', state.salesHistory);
     const todaySales = state.salesHistory.filter(sale => {
-        const saleDate = new Date(sale.timestamp).toDateString();
-        return saleDate === new Date().toDateString();
+        const saleDate = new Date(sale.timestamp);
+        const today = new Date();
+        console.log(`Checking sale date: ${saleDate} vs today: ${today}`);
+        return saleDate.getDate() === today.getDate() &&
+               saleDate.getMonth() === today.getMonth() &&
+               saleDate.getFullYear() === today.getFullYear();
     });
+    console.log('Today sales:', todaySales);
+
+    // Calculate profit for a sale
+    function calculateSaleProfit(sale) {
+        return sale.items.reduce((profit, item) => {
+            const product = state.products.find(p => p.id === item.productId);
+            if (product) {
+                return profit + ((item.price - product.cost) * item.quantity);
+            }
+            return profit;
+        }, 0);
+    }
     
     const totalSales = todaySales.reduce((sum, sale) => sum + sale.total, 0);
     const totalProfit = todaySales.reduce((sum, sale) => sum + calculateSaleProfit(sale), 0);
