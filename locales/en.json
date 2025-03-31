@@ -73,5 +73,13 @@
   "saleCompleteProfitLabel": "Profit:",
   "selectProductPlaceholder": "Select a product...",
   "reportsMenu": "Reports",
-  "todaysSaleReport": "Today's Sale"
+  "todaysSaleReport": "Today's Sale",
+  "salesReportLabel": "Sales Report",
+  "locationLabel": "Location",
+  "dateLabel": "Date",
+  "totalSalesLabel": "Total Sales",
+  "totalProfitLabel": "Total Profit",
+  "transactionsLabel": "Transactions",
+  "selectDateLabel": "Select Date",
+  "closeButton": "Close"
 }

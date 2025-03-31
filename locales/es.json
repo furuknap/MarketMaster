@@ -73,5 +73,13 @@
   "saleCompleteProfitLabel": "Ganancia:",
   "selectProductPlaceholder": "Selecciona un producto...",
   "reportsMenu": "Reportes",
-  "todaysSaleReport": "Ventas de Hoy"
+  "todaysSaleReport": "Ventas de Hoy",
+  "salesReportLabel": "Reporte de Ventas",
+  "locationLabel": "Ubicación",
+  "dateLabel": "Fecha",
+  "totalSalesLabel": "Ventas Totales",
+  "totalProfitLabel": "Ganancia Total",
+  "transactionsLabel": "Transacciones",
+  "selectDateLabel": "Seleccionar Fecha",
+  "closeButton": "Cerrar"
 }
