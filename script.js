@@ -959,32 +959,30 @@ function completeSale() {
     
     state.salesHistory.unshift(saleRecord);
     saveToLocalStorage();
-
-    // Clear current sale
-    clearCurrentSale();
     
     // Show confirmation modal
-    elements.modalTotal.textContent = `$${state.currentSale.total.toFixed(2)}`;
+    elements.modalTotal.textContent = `$${saleRecord.total.toFixed(2)}`;
     elements.modalPaymentMethod.textContent = state.currentSale.paymentMethod;
  
  // Calculate and display event profit
     const profit = calculateEventProfit(state.currentSale, state.currentEvent);
     elements.saleCompleteModal.classList.remove('hidden');
     
- // Display profit in modal
-    const profitElement = document.createElement('p');
-    profitElement.classList.add('text-gray-600');
-    profitElement.innerHTML = `<span data-translate="saleCompleteProfitLabel">Profit:</span> <span class="font-bold">$${profit.toFixed(2)}</span>`;
-    elements.saleCompleteModal.querySelector('.text-center').appendChild(profitElement);
-    
     // Update sales total display
     updateSalesTotal();
+
+    // Clear current sale
+    clearCurrentSale();
+
 // Calculate event profit
 function calculateEventProfit(sale, event) {
   let totalRevenue = sale.total;
   let totalCostOfGoods = 0;
   sale.items.forEach(item => {
-    totalCostOfGoods += item.product.cost * item.quantity;
+    const product = state.products.find(p => p.id === item.productId);
+    if (product) {
+      totalCostOfGoods += product.cost * item.quantity;
+    }
   });
   let eventCost = event ? event.cost : 0;
   let totalProfit = totalRevenue - totalCostOfGoods - eventCost;
