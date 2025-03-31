@@ -241,8 +241,9 @@ async function init() {
     // Display event name and date
     if (state.currentEvent) {
         document.getElementById('eventName').textContent = state.currentEvent.name;
-        document.getElementById('eventStartDate').textContent = new Date(state.currentEvent.startDate).toLocaleDateString();
-  document.getElementById('eventEndDate').textContent = new Date(state.currentEvent.endDate).toLocaleDateString();
+        const startDate = new Date(state.currentEvent.startDate).toLocaleDateString();
+        const endDate = new Date(state.currentEvent.endDate).toLocaleDateString();
+        document.getElementById('eventDate').textContent = `${startDate} - ${endDate}`;
     }
 
     updateSalesTotal();
