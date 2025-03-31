@@ -241,9 +241,12 @@ async function init() {
     // Display event name and date
     if (state.currentEvent) {
         document.getElementById('eventName').textContent = state.currentEvent.name;
+        alert(state.currentEvent.location);
+        debugger;
         const startDate = state.currentEvent.startDate ? new Date(state.currentEvent.startDate).toLocaleDateString() : 'Invalid Date';
         const endDate = state.currentEvent.endDate ? new Date(state.currentEvent.endDate).toLocaleDateString() : 'Invalid Date';
         document.getElementById('eventDate').textContent = `${startDate} - ${endDate}`;
+        document.getElementById('eventLocation').textContent = state.currentEvent.location;
     }
 
     updateSalesTotal();
@@ -438,31 +441,38 @@ function handleDiscountSubmit(e) {
 
 // Handle event form submission
 function handleEventSubmit(e) {
+    console.log('handleEventSubmit called');
     e.preventDefault();
     
-    const name = document.getElementById('eventName').value;
+    const name = document.getElementById('eventModalName').value;
     const startDate = document.getElementById('eventStartDate').value;
     const endDate = document.getElementById('eventEndDate').value;
-    const location = document.getElementById('eventLocation').value;
+    const location = document.getElementById('eventModalLocation').value;
  const cost = parseFloat(document.getElementById('eventCost').value);
     
     state.currentEvent = {
         id: Date.now(),
+        cost,
+        startTime: new Date().toISOString(),
         name,
         startDate,
         endDate,
-        location,
-  cost,
-        startTime: new Date().toISOString()
+        location
     };
-    
+
     saveToLocalStorage();
     elements.eventModal.classList.add('hidden');
     elements.eventForm.reset();
+    document.getElementById('eventLocation').textContent = location;
 }
 
 // Update discount fields based on selected type
 function updateDiscountFields() {
+    document.getElementById('eventName').textContent = name;
+    const displayStartDate = startDate ? new Date(startDate).toLocaleDateString() : 'Invalid Date';
+    const displayEndDate = endDate ? new Date(endDate).toLocaleDateString() : 'Invalid Date';
+    document.getElementById('eventDate').textContent = `${displayStartDate} - ${displayEndDate}`;
+    document.getElementById('eventLocation').textContent = location;
     const type = document.getElementById('discountType').value;
     const discountFields = document.getElementById('discountFields');
     
