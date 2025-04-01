@@ -23,7 +23,6 @@ Access the application at:
 4. View daily reports showing:
    - Total sales
    - Profit calculations
-   - Most popular items
 
 ## Project Structure
 
