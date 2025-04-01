@@ -73,7 +73,6 @@
   "saleCompletePaidWithLabel": "Pagado con:",
   "doneButton": "Hecho",
   "saleCompleteProfitLabel": "Ganancia:",
-  "selectProductPlaceholder": "Selecciona un producto...",
   "reportsMenu": "Reportes",
   "todaysSaleReport": "Ventas de Hoy",
   "salesReportLabel": "Reporte de Ventas",
@@ -83,5 +82,9 @@
   "totalProfitLabel": "Ganancia Total",
   "transactionsLabel": "Transacciones",
   "selectDateLabel": "Seleccionar Fecha",
-  "closeButton": "Cerrar"
+  "closeButton": "Cerrar",
+  "exportData": "Exportar Datos",
+  "importData": "Importar Datos",
+  "dataImportedSuccessfully": "¡Datos importados exitosamente!",
+  "errorImportingData": "Error al importar datos: "
 }

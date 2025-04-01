@@ -248,7 +248,7 @@ async function init() {
     // Render initial UI
     renderProducts();
     renderDiscounts();
-    // Display event name and date
+    // Display event info in unified section
     if (state.currentEvent) {
         document.getElementById('eventName').textContent = state.currentEvent.name;
         const startDate = state.currentEvent.startDate ? new Date(state.currentEvent.startDate).toLocaleDateString() : 'Invalid Date';
@@ -382,6 +382,9 @@ function setupEventListeners() {
                 menuDropdown.classList.add('hidden');
             }
         });
+        // Export and Import data
+        document.getElementById('exportDataBtn').addEventListener('click', exportData);
+        document.getElementById('importDataBtn').addEventListener('click', importData);
     }
 }
 
@@ -1144,9 +1147,63 @@ function showTodaysSaleReport() {
     });
 }
 
+// Export data function
+function exportData() {
+    const data = JSON.stringify({
+        products: state.products,
+        discounts: state.discounts,
+        salesHistory: state.salesHistory,
+        currentSale: state.currentSale,
+        currentEvent: state.currentEvent,
+        eventStartDate: state.eventStartDate,
+        eventEndDate: state.eventEndDate,
+        currentLanguage: currentLanguage
+    });
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'marketmaster_data.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// Import data function
+function importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (readEvent) => {
+            try {
+                const data = JSON.parse(readEvent.target.result);
+                state.products = data.products || [];
+                state.discounts = data.discounts || [];
+                state.salesHistory = data.salesHistory || [];
+                state.currentEvent = data.currentEvent || null;
+                saveToLocalStorage();
+                renderProducts();
+                renderDiscounts();
+                renderSalesHistory();
+                updateSalesTotal();
+                alert('Data imported successfully!');
+            } catch (error) {
+                alert('Error importing data: ' + error);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
 // Update sales total
 function updateSalesTotal() {
     const total = state.salesHistory.reduce((sum, sale) => sum + sale.total, 0);
+
     elements.totalSales.textContent = `$${total.toFixed(2)}`;
 }
 
