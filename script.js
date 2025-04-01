@@ -313,7 +313,12 @@ function setupEventListeners() {
         populateProductDropdown();
         elements.discountModal.classList.remove('hidden');
     });
-    elements.newEventBtn.addEventListener('click', () => elements.eventModal.classList.remove('hidden'));
+    elements.newEventBtn.addEventListener('click', () => {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('eventStartDate').value = today;
+        document.getElementById('eventEndDate').value = today;
+        elements.eventModal.classList.remove('hidden');
+    });
     document.getElementById('todaysSaleReportBtn').addEventListener('click', function(e) {
         e.preventDefault();
         showTodaysSaleReport();
@@ -457,10 +462,11 @@ function handleEventSubmit(e) {
     e.preventDefault();
     
     const name = document.getElementById('eventModalName').value;
-    const startDate = document.getElementById('eventStartDate').value;
-    const endDate = document.getElementById('eventEndDate').value;
-    const location = document.getElementById('eventModalLocation').value;
- const cost = parseFloat(document.getElementById('eventCost').value);
+    const today = new Date().toISOString().split('T')[0];
+    const startDate = document.getElementById('eventStartDate').value || today;
+    const endDate = document.getElementById('eventEndDate').value || today;
+    const location = document.getElementById('eventModalLocation').value || '';
+    const cost = parseFloat(document.getElementById('eventCost').value) || 0;
     
     state.currentEvent = {
         id: Date.now(),
