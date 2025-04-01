@@ -264,10 +264,7 @@ async function init() {
 function loadSampleData() {
     state.products = [
         { id: 1, name: "Organic Tomatoes", price: 3.50, cost: 1.20, category: "produce" },
-        { id: 2, name: "Homemade Bread", price: 5.00, cost: 1.80, category: "bakery" },
-        { id: 3, name: "Farm Eggs (Dozen)", price: 4.50, cost: 2.00, category: "dairy" },
-        { id: 4, name: "Artisan Cheese", price: 8.00, cost: 3.50, category: "dairy" },
-        { id: 5, name: "Handmade Soap", price: 6.00, cost: 2.00, category: "crafts" }
+        { id: 2, name: "Homemade Bread", price: 5.00, cost: 1.80, category: "bakery" }
     ];
     
     state.discounts = [
@@ -277,15 +274,8 @@ function loadSampleData() {
             type: "bundle", 
             productId: 1, 
             params: { quantity: 3, price: 9.00 } 
-        },
-        { 
-            id: 2, 
-            name: "Bread & Cheese", 
-            type: "fixed", 
-            productId: 2, 
-            params: { amount: 2.00, withProduct: 4 } 
         }
-    ];
+        ];
     
     saveToLocalStorage();
 }
@@ -432,6 +422,8 @@ function handleDiscountSubmit(e) {
     if (type === 'bundle') {
         params.quantity = parseInt(document.getElementById('bundleQuantity').value);
         params.price = parseFloat(document.getElementById('bundlePrice').value);
+        
+        // Bundle discount parameters
     } else if (type === 'percentage') {
         params.percentage = parseInt(document.getElementById('percentageValue').value);
     } else if (type === 'fixed') {
@@ -485,76 +477,35 @@ function handleEventSubmit(e) {
 
 // Update discount fields based on selected type
 function updateDiscountFields() {
-    document.getElementById('eventName').textContent = name;
-    const displayStartDate = startDate ? new Date(startDate).toLocaleDateString() : 'Invalid Date';
-    const displayEndDate = endDate ? new Date(endDate).toLocaleDateString() : 'Invalid Date';
-    document.getElementById('eventDate').textContent = `${displayStartDate} - ${displayEndDate}`;
-    document.getElementById('eventLocation').textContent = location;
     const type = document.getElementById('discountType').value;
-    const discountFields = document.getElementById('discountFields');
     
-    let html = '';
+    // Hide all field groups
+    document.getElementById('bundleFields').classList.add('hidden');
+    document.getElementById('percentageFields').classList.add('hidden');
+    document.getElementById('fixedFields').classList.add('hidden');
     
+    // Show only the fields for the selected type
     if (type === 'bundle') {
-        html = `
-            <div>
-                <label class="block text-gray-700 mb-2" for="bundleQuantity" data-translate-dynamic="bundleQuantityLabel">Quantity</label>
-                <input type="number" id="bundleQuantity" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="2" min="2">
-            </div>
-            <div>
-                <label class="block text-gray-700 mb-2" for="bundlePrice" data-translate-dynamic="bundlePriceLabel">Total Price ($)</label>
-                <input type="number" step="0.01" id="bundlePrice" class="w-full px-3 py-2 border border-gray-300 rounded-md">
-            </div>
-        `;
+        document.getElementById('bundleFields').classList.remove('hidden');
     } else if (type === 'percentage') {
-        html = `
-            <div class="col-span-2">
-                <label class="block text-gray-700 mb-2" for="percentageValue" data-translate-dynamic="percentageValueLabel">Percentage Off</label>
-                <div class="flex items-center">
-                    <input type="number" id="percentageValue" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="10" min="1" max="100">
-                    <span class="ml-2">%</span>
-                </div>
-            </div>
-        `;
+        document.getElementById('percentageFields').classList.remove('hidden');
     } else if (type === 'fixed') {
-        html = `
-            <div class="col-span-2">
-                <label class="block text-gray-700 mb-2" for="fixedAmount" data-translate-dynamic="fixedAmountLabel">Amount Off ($)</label>
-                <input type="number" step="0.01" id="fixedAmount" class="w-full px-3 py-2 border border-gray-300 rounded-md">
-            </div>
-        `;
-        
-        // Add conditional field for "with product" option
-        setTimeout(() => {
-            const fixedAmountField = document.getElementById('fixedAmount');
-            if (fixedAmountField) {
-                fixedAmountField.insertAdjacentHTML('afterend', `
-                    <div class="col-span-2 mt-2">
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" id="withProductCheckbox" class="form-checkbox">
-                            <span class="ml-2" data-translate-dynamic="withProductLabel">When purchased with another product</span>
-                        </label>
-                        <select id="withProductSelect" class="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md hidden">
-                            <!-- Products will be populated here -->
-                        </select>
-                    </div>
-                `);
-                
-                // Set up event listener for checkbox
-                document.getElementById('withProductCheckbox').addEventListener('change', (e) => {
-                    const select = document.getElementById('withProductSelect');
-                    if (e.target.checked) {
-                        select.classList.remove('hidden');
-                        populateWithProductDropdown();
-                    } else {
-                        select.classList.add('hidden');
-                    }
-                });
-            }
-        }, 0);
+        document.getElementById('fixedFields').classList.remove('hidden');
     }
     
-    discountFields.innerHTML = html;
+    // Handle the withProduct checkbox if it exists
+    const withProductCheckbox = document.getElementById('withProductCheckbox');
+    if (withProductCheckbox) {
+        withProductCheckbox.addEventListener('change', (e) => {
+            const select = document.getElementById('withProductSelect');
+            if (e.target.checked) {
+                select.classList.remove('hidden');
+                populateWithProductDropdown();
+            } else {
+                select.classList.add('hidden');
+            }
+        });
+    }
 }
 
 // Populate product dropdown for discounts
@@ -914,6 +865,12 @@ function calculateSaleTotals() {
     let subtotal = 0;
     let totalDiscount = 0;
     
+    // Calculate subtotal first
+    state.currentSale.items.forEach(item => {
+        const product = state.products.find(p => p.id === item.productId);
+        if (product) subtotal += product.price * item.quantity;
+    });
+
     // Apply discounts
     state.currentSale.items.forEach(item => {
         item.discountApplied = 0; // Reset discount before recalculation
@@ -921,11 +878,15 @@ function calculateSaleTotals() {
         const product = state.products.find(p => p.id === item.productId);
         if (!product) return;
         
-        subtotal += product.price * item.quantity;
-        
         // Apply discounts if any
         const applicableDiscounts = state.discounts.filter(d => d.productId === product.id);
         applicableDiscounts.forEach(discount => {
+            // Check discount criteria
+            let meetsCriteria = true;
+            
+            
+            if (!meetsCriteria) return;
+
             if (discount.type === 'bundle') {
                 const bundleCount = Math.floor(item.quantity / discount.params.quantity);
                 if (bundleCount > 0) {
