@@ -218,13 +218,19 @@ function updateDynamicModalText() {
 
 // --- Language Switcher ---
 function setupLanguageSwitcher() {
-    const switcher = document.getElementById('languageSwitcher'); // Assuming an element with this ID exists
-    if (switcher) {
-        switcher.addEventListener('change', (event) => {
-            loadTranslations(event.target.value);
+    const languageToggleBtn = document.getElementById('languageToggleBtn');
+    const languageDisplay = languageToggleBtn.querySelector('[data-translate="currentLanguageDisplay"]');
+
+    if (languageToggleBtn) {
+        languageToggleBtn.addEventListener('click', () => {
+            const newLanguage = currentLanguage === 'en' ? 'es' : 'en';
+            loadTranslations(newLanguage);
+            // Update button text immediately based on the new language
+            languageDisplay.textContent = newLanguage === 'en' ? 'English' : 'Español';
         });
-        // Set initial value from state
-        switcher.value = currentLanguage;
+
+        // Set initial button text based on current language
+        languageDisplay.textContent = currentLanguage === 'en' ? 'English' : 'Español';
     }
 }
 
