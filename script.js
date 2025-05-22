@@ -1208,7 +1208,15 @@ function importData() {
 
 // Update sales total
 function updateSalesTotal() {
-    const total = state.salesHistory.reduce((sum, sale) => sum + sale.total, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set time to the beginning of today
+
+    const todaysSales = state.salesHistory.filter(sale => {
+        const saleDate = new Date(sale.timestamp);
+        return saleDate >= today;
+    });
+
+    const total = todaysSales.reduce((sum, sale) => sum + sale.total, 0);
 
     elements.totalSales.textContent = `$${total.toFixed(2)}`;
 }
